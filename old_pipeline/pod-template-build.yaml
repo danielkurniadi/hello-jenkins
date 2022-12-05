@@ -1,0 +1,65 @@
+# Pod template for Jenkinsfile.
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app.kubernetes.io/component: jenkins-agent
+spec:
+  containers:
+  - image: gcr.io/my-company/dataworks-build:0.1.1 # This is for example
+    name: dataworks-build
+    env:
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.name
+    command:
+    - sleep
+    - infinity
+    resources:
+      requests:
+        cpu: "4"
+        ephemeral-storage: 2Gi
+        memory: 4Gi
+      limits:
+        cpu: "6"
+        memory: 6Gi
+    securityContext:
+      runAsUser: 0
+      runAsNonRoot: false
+      readOnlyRootFilesystem: false
+      capabilities:
+        drop:
+          - NET_RAW
+    volumeMounts:
+      - mountPath: /root/.cache
+        name: build-cache
+  - image: jenkins/inbound-agent:4.11-1-jdk11
+    name: jnlp
+    resources:
+      requests:
+        cpu: "2"
+        memory: 2Gi
+        ephemeral-storage: 10Gi
+      limits:
+        cpu: "2"
+        memory: 2Gi
+  terminationGracePeriodSeconds: 120
+  restartPolicy: "Never"
+  securityContext:
+    fsGroup: 1000
+    runAsGroup: 1000
+    runAsUser: 1000
+  serviceAccountName: ksa-jenkins-agent
+  volumes:
+  - name: build-cache
+    ephemeral:
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 30Gi
+          storageClassName: "premium-rwo"

@@ -1,0 +1,41 @@
+# Pod template for Jenkinsfile.
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app.kubernetes.io/component: jenkins-agent
+spec:
+  containers:
+  - image: gcr.io/my-company/dataworks-deploy:0.1.1 # This is for example
+    name: dataworks-deploy
+    command:
+    - sleep
+    - infinity
+    resources:
+      requests:
+        cpu: "4"
+        memory: 4Gi
+        ephemeral-storage: 10Gi
+      limits:
+        cpu: "4"
+        memory: 4Gi
+    securityContext:
+      runAsUser: 0
+      runAsNonRoot: false
+      readOnlyRootFilesystem: false
+      capabilities:
+        drop:
+          - NET_RAW
+  - image: jenkins/inbound-agent:4.11-1-jdk11
+    name: jnlp
+    resources:
+      requests:
+        cpu: "2"
+        memory: 2Gi
+        ephemeral-storage: "10Gi"
+      limits:
+        cpu: "2"
+        memory: 2Gi
+  restartPolicy: "Never"
+  serviceAccount: ksa-jenkins-agent
+  serviceAccountName: ksa-jenkins-agent
