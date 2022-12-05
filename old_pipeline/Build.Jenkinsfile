@@ -89,6 +89,10 @@ pipeline {
         }
         stage("Unit Tests") {
             steps {
+                /** TODO@hardik: also help see if this is the right way to perform
+                *   parallel steps. I tried to use matrix but it doesn't support
+                *   dynamic axis. I prefer to do it this way if possible.
+                */
                 script {
                     // Construct unit test jobs to run.
                     unitTestJobs = [:]
@@ -109,6 +113,10 @@ pipeline {
         }
         stage("Build") {
             steps {
+                /** TODO@hardik: also help see if this is the right way to perform
+                *   parallel steps. I tried to use matrix but it doesn't support
+                *   dynamic axis. I prefer to do it this way if possible.
+                */
                 script {
                     // Construct unit test jobs to run.
                     buildJobs = [:]
