@@ -10,7 +10,7 @@ class CustomBuildSummary implements Serializable {
   }
 
   def buildSummary() {
-    steps.bat "echo this is build summary stage"
+    steps.sh "echo this is build summary stage"
   }
 
 }

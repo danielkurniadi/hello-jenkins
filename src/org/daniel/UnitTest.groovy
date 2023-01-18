@@ -10,7 +10,7 @@ class UnitTest implements Serializable {
   }
 
   def runTests() {
-    steps.bat "echo this is unit test stage"
+    steps.sh "echo this is unit test stage"
   }
 
 }

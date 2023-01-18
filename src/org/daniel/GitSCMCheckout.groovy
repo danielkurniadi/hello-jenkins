@@ -8,7 +8,7 @@ class GitSCMCheckout implements Serializable {
   }
 
   def gitCheckout(repository) {
-    steps.bat "echo Checkout from repository: ${repository}"
+    steps.sh "echo Checkout from repository: ${repository}"
   }
 
 }

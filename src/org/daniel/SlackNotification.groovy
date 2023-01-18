@@ -8,6 +8,6 @@ class SlackNotification implements Serializable {
   }
 
   def sendSlackNotification(message) {
-    steps.bat "echo sending slack notification: ${message}"
+    steps.sh "echo sending slack notification: ${message}"
   }
 }

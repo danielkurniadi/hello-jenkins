@@ -10,7 +10,7 @@ class BuildPushImage implements Serializable {
   }
 
   def buildPush() {
-    steps.bat "echo this is build push stage"
+    steps.sh "echo this is build push stage"
   }
 
 }
