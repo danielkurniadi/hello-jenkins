@@ -10,7 +10,7 @@ class DeploySecrets implements Serializable {
   }
 
   def deploySecrets() {
-    steps.bat "echo this is deploy secrets stage"
+    steps.sh "echo this is deploy secrets stage"
   }
 
 }

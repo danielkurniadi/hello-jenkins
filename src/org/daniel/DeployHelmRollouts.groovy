@@ -10,7 +10,7 @@ class DeployHelmRollouts implements Serializable {
   }
 
   def deployHelmRollouts() {
-    steps.bat "echo this is deploy helm rollouts stage stage"
+    steps.sh "echo this is deploy helm rollouts stage stage"
   }
 
 }
