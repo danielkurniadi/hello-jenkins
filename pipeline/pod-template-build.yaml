@@ -6,8 +6,8 @@ metadata:
     app.kubernetes.io/component: jenkins-agent
 spec:
   containers:
-  - image: gcr.io/my-company/dataworks-build:0.1.1 # This is for example
-    name: dataworks-build
+  - image: gcr.io/my-company/daniel-build:0.1.1 # This is for example
+    name: daniel-build
     env:
     - name: POD_NAME
       valueFrom:

@@ -1,4 +1,4 @@
-package org.dataworks
+package org.daniel
 
 class SlackNotification implements Serializable {
   def steps

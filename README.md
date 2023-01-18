@@ -1,38 +1,56 @@
 # Hello Jenkins project
 
-## Background
 
-Why and what is this for? What is the value of accomplishing this project?
+## Defining Shared Libraries
+A Shared Library is defined with a name, a source code retrieval method such as by SCM, and optionally a default version. The name should be a short identifier as it will be used in scripts.
 
-As a background context, we previously have two Jenkins multi-branch pipelines that works fine for our CI and CD pipeline.
-1. First pipeline builds our app image and push it to the cloud.
-2. Second pipeline deploy our app image to our kubernetes cluster using helm rollout.
+The version could be anything understood by that SCM; for example, branches, tags, and commit hashes all work for Git. You may also declare whether scripts need to explicitly request that library (detailed below), or if it is present by default. Furthermore, if you specify a version in Jenkins configuration, you can block scripts from selecting a different version.
 
-Now, we are switching to a declarative pipeline style and also looking into how we can make a more composable and clean pipeline codes written
-in groovy script and Jenkinsfile.
+The best way to specify the SCM is using an SCM plugin which has been specifically updated to support a new API for checking out an arbitrary named version (Modern SCM option). As of this writing, the latest versions of the Git and Subversion plugins support this mode; others should follow.
 
+If your SCM plugin has not been integrated, you may select Legacy SCM and pick anything offered. In this case, you need to include ${library.yourLibName.version} somewhere in the configuration of the SCM, so that during checkout the plugin will expand this variable to select the desired version. For example, for Subversion, you can set the Repository URL to svnserver/project/${library.yourLibName.version} and then use versions such as trunk or branches/dev or tags/1.0.
 
-The details of how the build and deploy script works is not important. If it makes your life easier for this task,
-you can instead just replace the script with `echo "Hello World this is step: build image"`.
+Directory structure
+The directory structure of a Shared Library repository is as follows:
 
-<br>
+```
+(root)
++- src                     # Groovy source files
+|   +- org
+|       +- daniel
+|           +- ApprovalInput.groovy  # for org.daniel.ApprovalInput class
++- vars
+|   +- foo.groovy          # for global 'foo' variable
+|   +- foo.txt             # help for 'foo' variable
++- resources               # resource files (external libraries only)
+|   +- org
+|       +- foo
+|           +- bar.json    # static helper data for org.foo.Bar
+```
+The `src` directory should look like standard Java source directory structure. This directory is added to the classpath when executing Pipelines.
 
+The `vars` directory hosts script files that are exposed as a variable in Pipelines. The name of the file is the name of the variable in the Pipeline. So if you had a file called `vars/log.groovy` with a function like `def info(message)`…​ in it, you can access this function like `log.info "hello world"` in the Pipeline. You can put as many functions as you like inside this file. Read on below for more examples and options.
+
+The basename of each `.groovy` file should be a Groovy (~ Java) identifier, conventionally `camelCased`. The matching `.txt`, if present, can contain documentation, processed through the system’s configured markup formatter (so may really be HTML, Markdown, etc., though the .txt extension is required). This documentation will only be visible on the Global Variable Reference pages that are accessed from the navigation sidebar of Pipeline jobs that import the shared library. In addition, those jobs must run successfully once before the shared library documentation will be generated.
+
+The Groovy source files in these directories get the same “CPS transformation” as in Scripted Pipeline.
+
+A resources directory allows the `libraryResource` step to be used from an external library to load associated non-Groovy files. Currently this feature is not supported for internal libraries.
+
+Other directories under the root are reserved for future enhancements.
 
 ## Pipeline Diagram
 
 As spoken, there are two pipelines: `Build` and `Deploy` pipeline. The following section describes the desired pipelines using diagram.
 
-### Current (Old) Implementation
+### Implementation
 
 - `Build` pipeline: This pipeline is currently implemented in `old_pipeline/Build.Jenkinsfile`. When we create a multi-branch project in Jenkins, make sure to point the Jenkinfiles to path: `pipeline/Build.Jenkinsfile`.
 - `Deploy` pipeline: This pipeline is currently implemented in `Deploy.Jenkinsfile`. When we create a multi-branch project in Jenkins, make sure to point the Jenkinfiles to path: `pipeline/Deploy.Jenkinsfile`.
 
 ### _Why refactoring_?
 
-Both this pipelines require refactoring because everything is implemented in a single file and it feels like we can use groovy modules to refactor common functionalities of these two pipelines. Not to mention that, we also have different envs: `dev`, `staging`, and `production`.
-
-Imagine scenarios where in `staging` and `production` we want to include step for approval gate from authorized operator while in `dev` env
-we don't want to have the approval gate step i.e make it easy for developers to deploy their app without asking the authorized personel everytime they want to test out something in `dev`.
+Both this pipelines require refactoring because everything is implemented in a single file and it feels like we can use groovy modules to refactor common functionalities of these two pipelines. We also want to share the common steps with other Jenkins pipeline that different teams in our company may utilise.
 
 ### `Build` pipeline
 
@@ -102,49 +120,3 @@ I believe this specific needs can be catered directly using the following:
     ```
 
 <br>
-
-## Project Challenge
-
-This section defines what help we need from you. Mainly regarding refactoring of the Jenkinsfile.
-
-### 1. Refactoring for Composable Pipeline
-
-What does composable means?
-
-> Composable program can be assembled and composed from other smaller and modular programs.
-> This smaller programs may have the same or different interfaces but it has an expected behavior such that the main program and be constructed by passing a list of smaller programs.
-> A composable program is an old concept from Frontend development, often used when talking about React.js application but this concept should be applicable to any software engineering domain.
-
-**Task** - Now, you are given two Jenkinsfiles for `Build` and `Deploy`. Refactor the Jenkinsfiles into composable stage / steps using groovy libraries / modules.
-
-- The old pipeline scripts is found in `old_pipeline` folder
-  * Build: [`old_pipeline/Build.Jenkinsfile`]().
-  * Deploy: [`old_pipeline/Deploy.Jenkinsfile`]().
-- The refactored `Build` and `Deploy` pipelines should be able to run in `development`, `staging`, and `production` cluster. See [Pipeline Diagram](#desired-pipeline-diagram).
-- These refactored interfaces or classes in the groovy modules should be reuse-able for other pipelines.
-- These `Build` and `Deploy` pipelines should be as modular and _compose-able_ as possible. Imagine if we can define each stage as an object that implements `StageRunner` interface. Then we gave a `List<StageRunner>` to define what steps should we run in the pipeline in sequence. This gives great extensibility in our Jenkins code.
-
-In addition to this refactoring. We also need you to help with logging issue.
-
-<br>
-
-### 2. Research on logging to `kubectl logs`
-In addition to this refactoring. We also need you to help with logging issue.
-
-**Problem Statement**: Currently, I'm wondering if we can use SLF4J library in Jenkinfile or groovy class to log into a class.
-
-**Task**:
-- Research and see if we can just use SLF4J logger if possible. e.g.
-    ```java
-    @Slf4j
-    class StageRunner {
-        void run() {
-            log.debug ‘Hello, World!’
-        }
-    }
-    ```
-
-- Problem and motivation for this is spoken in the online-video call on Monday 5th Dec 2022, 6pm India Time.
-- Research and see if the SLF4J can redirect the log output to a file e.g. `/proc/1/fd/1`
-- See: https://unix.stackexchange.com/questions/295883/whats-the-difference-between-1-and-proc-self-fd-1-redirection
-

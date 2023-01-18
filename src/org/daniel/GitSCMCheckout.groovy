@@ -1,4 +1,4 @@
-package org.dataworks
+package org.daniel
 
 class GitSCMCheckout implements Serializable {
   def steps

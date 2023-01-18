@@ -1,4 +1,4 @@
-package org.dataworks
+package org.daniel
 
 import hudson.model.ChoiceParameterDefinition
 
