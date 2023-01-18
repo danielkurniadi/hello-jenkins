@@ -6,8 +6,8 @@ metadata:
     app.kubernetes.io/component: jenkins-agent
 spec:
   containers:
-  - image: gcr.io/my-company/dataworks-deploy:0.1.1 # This is for example
-    name: dataworks-deploy
+  - image: gcr.io/my-company/daniel-deploy:0.1.1 # This is for example
+    name: daniel-deploy
     command:
     - sleep
     - infinity

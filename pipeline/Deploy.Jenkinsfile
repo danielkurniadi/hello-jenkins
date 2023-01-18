@@ -13,8 +13,8 @@ pipeline {
         */
         kubernetes {
             yamlFile "old_pipeline/pod-template-build.yaml"
-            label "jenkins-agent-dataworks-build"
-            defaultContainer "dataworks-build"
+            label "jenkins-agent-daniel-build"
+            defaultContainer "daniel-build"
             idleMinutes 180
         }
     }
